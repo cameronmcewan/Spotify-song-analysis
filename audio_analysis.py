@@ -34,7 +34,7 @@ search_made = False
 def convert_duration_ms(duration_ms):
     minutes = duration_ms // 60000
     seconds = (duration_ms % 60000) // 1000
-    return f"{minutes}:{seconds:02d}"
+    return f"{minutes}m {seconds:02d}s"
 
 def convert_key(key):
     keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
