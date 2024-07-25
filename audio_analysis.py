@@ -60,18 +60,34 @@ if song_title and artist_name:
             # Column 2: Audio Features Overview
             with col2:
                 st.subheader("Audio Features Overview")
-                st.write(f"**Danceability:** {features['danceability']:.2f}")
-                st.write(f"**Energy:** {features['energy']:.2f}")
-                st.write(f"**Key:** {features['key']}")
-                st.write(f"**Loudness:** {features['loudness']:.2f} dB")
-                st.write(f"**Mode:** {features['mode']}")
-                st.write(f"**Speechiness:** {features['speechiness']:.2f}")
-                st.write(f"**Acousticness:** {features['acousticness']:.2f}")
-                st.write(f"**Instrumentalness:** {features['instrumentalness']:.2f}")
-                st.write(f"**Liveness:** {features['liveness']:.2f}")
-                st.write(f"**Valence:** {features['valence']:.2f}")
-                st.write(f"**Tempo:** {features['tempo']:.2f} BPM")
-                st.write(f"**Duration:** {features['duration_ms'] / 1000:.2f} seconds")
+                st.write("Select an audio feature from the sidebar to view more details.")
+
+            # Sidebar for detailed information
+            with st.sidebar:
+                st.header("Audio Features Descriptions")
+
+                # Define descriptions for each audio feature
+                descriptions = {
+                    'danceability': "Danceability describes how suitable a track is for dancing based on tempo, rhythm stability, and beat strength.",
+                    'energy': "Energy is a measure of intensity and activity, determined by dynamics, timbre, and other aspects.",
+                    'key': "The musical key of the track, with values from 0 (C) to 11 (B).",
+                    'loudness': "Overall loudness of the track in decibels (dB).",
+                    'mode': "Modality of the track. Major is 1, minor is 0.",
+                    'speechiness': "Detects the presence of spoken words. Higher values indicate more spoken words.",
+                    'acousticness': "Measures the amount of acoustic sound in the track.",
+                    'instrumentalness': "Predicts the likelihood of the track being instrumental.",
+                    'liveness': "Detects the presence of an audience in the recording. Higher values indicate a more live performance.",
+                    'valence': "Describes the musical positiveness conveyed by the track. Higher values indicate a more positive mood.",
+                    'tempo': "Speed of the track measured in beats per minute (BPM).",
+                    'duration_ms': "Length of the track in milliseconds."
+                }
+
+                # Display each feature with its description
+                for feature, description in descriptions.items():
+                    st.subheader(feature.capitalize())
+                    st.write(f"**{feature.capitalize()}:** {features[feature]:.2f}")
+                    st.write(description)
+                
         else:
             st.write("No tracks found for the given title and artist.")
             search_made = False
