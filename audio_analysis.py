@@ -3,6 +3,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from dotenv import load_dotenv
 import os
+import plotly.graph_objects as go
 
 # Load environment variables from .env file
 load_dotenv()
@@ -30,6 +31,18 @@ artist_name = st.text_input("Enter Artist Name")
 # Track if a search has been made
 search_made = False
 
+def convert_duration_ms(duration_ms):
+    minutes = duration_ms // 60000
+    seconds = (duration_ms % 60000) // 1000
+    return f"{minutes}:{seconds:02d}"
+
+def convert_key(key):
+    keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+    return keys[key] if 0 <= key < len(keys) else "Unknown"
+
+def convert_mode(mode):
+    return "Major" if mode == 1 else "Minor"
+
 if song_title and artist_name:
     search_made = True
     try:
@@ -55,38 +68,61 @@ if song_title and artist_name:
             with col1:
                 st.subheader(f"Track: {track_name}")
                 st.write(f"**Artist:** {artist}")
+                st.write(f"**Duration:** {convert_duration_ms(features['duration_ms'])}")
+                st.write(f"**Key:** {convert_key(features['key'])}")
+                st.write(f"**Mode:** {convert_mode(features['mode'])}")
                 st.image(album_art, use_column_width=True)
 
-            # Column 2: Audio Features Overview
+            # Column 2: Audio Features Overview and Radar Chart
             with col2:
                 st.subheader("Audio Features Overview")
                 st.write("Select an audio feature from the sidebar to view more details.")
 
-            # Sidebar for detailed information
-            with st.sidebar:
-                st.header("Audio Features Descriptions")
+                # Sidebar for detailed information
+                with st.sidebar:
+                    st.header("Audio Features Descriptions")
 
-                # Define descriptions for each audio feature
-                descriptions = {
-                    'danceability': "Danceability describes how suitable a track is for dancing based on tempo, rhythm stability, and beat strength.",
-                    'energy': "Energy is a measure of intensity and activity, determined by dynamics, timbre, and other aspects.",
-                    'key': "The musical key of the track, with values from 0 (C) to 11 (B).",
-                    'loudness': "Overall loudness of the track in decibels (dB).",
-                    'mode': "Modality of the track. Major is 1, minor is 0.",
-                    'speechiness': "Detects the presence of spoken words. Higher values indicate more spoken words.",
-                    'acousticness': "Measures the amount of acoustic sound in the track.",
-                    'instrumentalness': "Predicts the likelihood of the track being instrumental.",
-                    'liveness': "Detects the presence of an audience in the recording. Higher values indicate a more live performance.",
-                    'valence': "Describes the musical positiveness conveyed by the track. Higher values indicate a more positive mood.",
-                    'tempo': "Speed of the track measured in beats per minute (BPM).",
-                    'duration_ms': "Length of the track in milliseconds."
-                }
+                    # Define descriptions for each audio feature
+                    descriptions = {
+                        'danceability': "Danceability describes how suitable a track is for dancing based on tempo, rhythm stability, and beat strength.",
+                        'energy': "Energy is a measure of intensity and activity, determined by dynamics, timbre, and other aspects.",
+                        'speechiness': "Detects the presence of spoken words. Higher values indicate more spoken words.",
+                        'acousticness': "Measures the amount of acoustic sound in the track.",
+                        'instrumentalness': "Predicts the likelihood of the track being instrumental.",
+                        'liveness': "Detects the presence of an audience in the recording. Higher values indicate a more live performance.",
+                        'valence': "Describes the musical positiveness conveyed by the track. Higher values indicate a more positive mood.",
+                    }
 
-                # Display each feature with its description
-                for feature, description in descriptions.items():
-                    st.subheader(feature.capitalize())
-                    st.write(f"**{feature.capitalize()}:** {features[feature]:.2f}")
-                    st.write(description)
+                    # Display each feature with its description
+                    for feature, description in descriptions.items():
+                        st.subheader(feature.capitalize())
+                        st.write(f"**{feature.capitalize()}:** {features[feature]:.2f}")
+                        st.write(description)
+
+                # Include only the specified features for the radar chart
+                radar_features = {feature: features[feature] for feature in ['danceability', 'energy', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence']}
+                
+                # Radar chart configuration
+                fig = go.Figure()
+                
+                fig.add_trace(go.Scatterpolar(
+                    r=list(radar_features.values()),
+                    theta=list(radar_features.keys()),
+                    fill='toself',
+                    name='Audio Features'
+                ))
+                
+                fig.update_layout(
+                    polar=dict(
+                        radialaxis=dict(
+                            visible=True,
+                            range=[0, 1]
+                        )
+                    ),
+                    showlegend=True
+                )
+                
+                st.plotly_chart(fig)
                 
         else:
             st.write("No tracks found for the given title and artist.")
