@@ -4,46 +4,27 @@ from spotipy.oauth2 import SpotifyOAuth
 from dotenv import load_dotenv
 import os
 import plotly.graph_objects as go
+from functions.functions import convert_duration_ms, convert_key, convert_mode
+from functions.spotify_setup import get_authenticated_spotify_client
+from sidebar import render_sidebar
 
-# Load environment variables from .env file
-load_dotenv()
 
-# Spotify API credentials from environment variables
-SPOTIPY_CLIENT_ID = os.getenv('SPOTIPY_CLIENT_ID')
-SPOTIPY_CLIENT_SECRET = os.getenv('SPOTIPY_CLIENT_SECRET')
-SPOTIPY_REDIRECT_URI = os.getenv('SPOTIPY_REDIRECT_URI')
+# Spotify authentication loaded from spotify_setup.py
+sp = get_authenticated_spotify_client()
 
-# Scope required to access audio features
-scope = "user-library-read"
+results = render_sidebar()
 
-# Set up Spotify authentication
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=SPOTIPY_CLIENT_ID,
-                                               client_secret=SPOTIPY_CLIENT_SECRET,
-                                               redirect_uri=SPOTIPY_REDIRECT_URI,
-                                               scope=scope))
-
+# Title for page
 st.title("Spotify Audio Analysis")
 
 # Input for song title and artist
-song_title = st.text_input("Enter Song Title")
-artist_name = st.text_input("Enter Artist Name")
+song_title = st.text_input("Song Title")
+artist_name = st.text_input("Artist Name")
 
 # Track if a search has been made
 search_made = False
 
-def convert_duration_ms(duration_ms):
-    minutes = duration_ms // 60000
-    seconds = (duration_ms % 60000) // 1000
-    return f"{minutes}m {seconds:02d}s"
-
-def convert_key(key):
-    keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-    return keys[key] if 0 <= key < len(keys) else "Unknown"
-
-def convert_mode(mode):
-    return "Major" if mode == 1 else "Minor"
-
-if song_title and artist_name:
+if results:
     search_made = True
     try:
         # Search for the track
